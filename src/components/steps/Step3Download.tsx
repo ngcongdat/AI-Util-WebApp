@@ -1,0 +1,92 @@
+import React from 'react';
+import { motion } from 'motion/react';
+import { Download, ChevronLeft } from 'lucide-react';
+import HighlightedQuote from '../HighlightedQuote';
+import type { CarouselItem } from './Step2Images';
+import type { CarouselSettings } from '../../hooks/useCarouselSettings';
+import type { LogoPosition, QuotePosition } from '../../utils/canvas';
+
+interface Props {
+  items: CarouselItem[];
+  logo: string | null;
+  settings: CarouselSettings;
+  onDownloadOne: (index: number) => void;
+  onDownloadAll: () => void;
+  onBack: () => void;
+}
+
+const logoPositionClass: Record<LogoPosition, string> = {
+  'top-left': 'top-4 left-4',
+  'top-right': 'top-4 right-4',
+  'bottom-left': 'bottom-4 left-4',
+  'bottom-right': 'bottom-4 right-4',
+};
+
+const quoteAlignClass: Record<QuotePosition, string> = {
+  top: 'justify-start pt-12',
+  center: 'justify-center',
+  bottom: 'justify-end pb-12',
+};
+
+export default function Step3Download({ items, logo, settings, onDownloadOne, onDownloadAll, onBack }: Props) {
+  const { textColor, highlightColor, fontFamily, fontSize, logoPosition, logoSize, quotePosition } = settings;
+
+  return (
+    <motion.div
+      key="step3"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-8"
+    >
+      <div className="bg-white p-8 rounded-3xl shadow-xl shadow-neutral-200/50 border border-neutral-100">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Download className="text-emerald-600" />
+            Bước 3: Hoàn tất & Tải về
+          </h2>
+          <button onClick={onBack} className="text-neutral-500 hover:text-neutral-800 flex items-center gap-1 text-sm font-medium">
+            <ChevronLeft size={16} /> Quay lại
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {items.map((item, index) => (
+            <div key={index} className="group relative aspect-square rounded-2xl overflow-hidden shadow-md border border-neutral-100">
+              <img src={item.image!} alt="Final" className="w-full h-full object-cover" />
+              <div className={`absolute inset-0 bg-black/40 p-8 flex flex-col text-center ${quoteAlignClass[quotePosition]}`}>
+                {logo && (
+                  <div className={`absolute p-4 pointer-events-none ${logoPositionClass[logoPosition]}`}>
+                    <img src={logo} alt="Logo" style={{ width: `${logoSize / 4}px` }} className="object-contain" />
+                  </div>
+                )}
+                <HighlightedQuote
+                  quote={item.quote}
+                  keywords={item.keywords}
+                  textColor={textColor}
+                  highlightColor={highlightColor}
+                  fontFamily={fontFamily}
+                  fontSize={fontSize / 4.5}
+                />
+              </div>
+              <button
+                onClick={() => onDownloadOne(index)}
+                className="absolute bottom-4 right-4 p-3 bg-white text-neutral-900 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+              >
+                <Download size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onDownloadAll}
+          className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xl shadow-xl shadow-emerald-200 transition-all flex items-center justify-center gap-3"
+        >
+          <Download size={24} />
+          Tải xuống tất cả ({items.length} ảnh)
+        </button>
+      </div>
+    </motion.div>
+  );
+}
