@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const apiKey = process.env.GEMINI_API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
 
 export interface QuoteData {
     text: string;
@@ -8,6 +9,7 @@ export interface QuoteData {
 }
 
 export async function generateQuotes(theme: string): Promise<QuoteData[]> {
+    if (!apiKey) throw new Error("GEMINI_API_KEY chưa được cấu hình.");
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Tạo 5 câu trích dẫn ngắn gọn, sâu sắc và truyền cảm hứng về chủ đề: "${theme}". 

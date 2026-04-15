@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, MessageSquare } from 'lucide-react';
 import { generateQuotes, generateImageFromReference } from '../services/gemini';
@@ -29,8 +30,8 @@ export default function CarouselGenerator() {
       const data = await generateQuotes(theme);
       setItems(data.map(d => ({ quote: d.text, keywords: d.keywords, image: null })));
       setStep(2);
-    } catch {
-      alert('Có lỗi xảy ra khi tạo trích dẫn. Vui lòng thử lại.');
+    } catch (err) {
+      alert(`Có lỗi xảy ra khi tạo trích dẫn: ${err instanceof Error ? err.message : 'Vui lòng thử lại.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -98,29 +99,20 @@ export default function CarouselGenerator() {
     }
   };
 
-  const resetApp = () => {
-    setStep(1);
-    setTheme('');
-    setItems([]);
-    setLogo(null);
-    setGenerationProgress(0);
-    setIsLoading(false);
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 min-h-screen flex flex-col">
       {/* Navigation */}
       <nav className="flex items-center justify-between mb-8 md:mb-12 py-4 border-b border-neutral-100">
-        <div onClick={resetApp} className="flex items-center gap-2 cursor-pointer group">
+        <Link to="/" className="flex items-center gap-2 cursor-pointer group">
           <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
             <Sparkles size={18} />
           </div>
           <span className="font-bold text-lg tracking-tight font-serif">CarouselAI</span>
-        </div>
+        </Link>
         <div className="flex items-center gap-3 md:gap-6 text-sm font-semibold text-neutral-600">
-          <button onClick={resetApp} className="hidden sm:block hover:text-emerald-600 transition-colors">
+          <Link to="/" className="hidden sm:block hover:text-emerald-600 transition-colors">
             Trang chủ
-          </button>
+          </Link>
           <a
             href="https://www.facebook.com/iamNCD"
             target="_blank"

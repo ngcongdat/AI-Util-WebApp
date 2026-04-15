@@ -1,0 +1,408 @@
+import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  PenLine, Image as ImageIcon, Upload, Trash2,
+  ChevronLeft, ChevronRight, Download, Sparkles, MessageSquare, Plus,
+} from 'lucide-react';
+import { useCarouselSettings } from '../hooks/useCarouselSettings';
+import HighlightedQuote from '../components/HighlightedQuote';
+import Step3Download from '../components/steps/Step3Download';
+import { downloadCarouselImage } from '../utils/canvas';
+import FeedbackModal from '../components/FeedbackModal';
+import WordSelector from '../components/WordSelector';
+import type { LogoPosition, QuotePosition } from '../utils/canvas';
+
+const FONTS = [
+  { name: 'Inter (Sans)', value: 'Inter' },
+  { name: 'Playfair (Serif)', value: 'Playfair Display' },
+  { name: 'System Mono', value: 'monospace' },
+];
+
+const EMPTY_ITEMS = Array.from({ length: 5 }, () => ({
+  quote: '',
+  keywords: [] as string[],
+  selectedIndices: [] as number[],
+  image: null as string | null,
+}));
+
+export default function CarouselCustomPage() {
+  const [step, setStep] = useState(1);
+  const [items, setItems] = useState(EMPTY_ITEMS);
+  const [logo, setLogo] = useState<string | null>(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+
+  const settings = useCarouselSettings();
+  const {
+    textColor, setTextColor,
+    highlightColor, setHighlightColor,
+    fontFamily, setFontFamily,
+    logoPosition, setLogoPosition,
+    logoSize, setLogoSize,
+    quotePosition, setQuotePosition,
+    fontSize, setFontSize,
+  } = settings;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (index !== undefined) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setItems(prev => prev.map((it, i) =>
+          i === index ? { ...it, image: event.target?.result as string } : it
+        ));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      Array.from<File>(files).slice(0, 5).forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setItems(prev => prev.map((it, i) =>
+            i === idx ? { ...it, image: event.target?.result as string } : it
+          ));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => setLogo(event.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleQuoteChange = (index: number, value: string) => {
+    setItems(prev => prev.map((it, i) => i === index ? { ...it, quote: value, selectedIndices: [] } : it));
+  };
+
+  const handleIndicesChange = (index: number, selectedIndices: number[]) => {
+    setItems(prev => prev.map((it, i) => i === index ? { ...it, selectedIndices } : it));
+  };
+
+  const canProceed = items.every(it => it.image && it.quote.trim());
+
+  const downloadImage = (index: number): Promise<void> => {
+    const item = items[index];
+    if (!item.image) return Promise.resolve();
+    return downloadCarouselImage({
+      quote: item.quote,
+      keywords: item.keywords,
+      selectedIndices: item.selectedIndices,
+      image: item.image,
+      logo,
+      textColor,
+      highlightColor,
+      fontFamily,
+      fontSize,
+      logoPosition,
+      logoSize,
+      quotePosition,
+      filename: `carousel-custom-${index + 1}.png`,
+    });
+  };
+
+  const downloadAll = async () => {
+    for (let i = 0; i < items.length; i++) {
+      await downloadImage(i);
+    }
+  };
+
+  const logoPositionClass: Record<LogoPosition, string> = {
+    'top-left': 'top-2 left-2',
+    'top-right': 'top-2 right-2',
+    'bottom-left': 'bottom-2 left-2',
+    'bottom-right': 'bottom-2 right-2',
+  };
+
+  const quoteAlignClass: Record<QuotePosition, string> = {
+    top: 'justify-start pt-4',
+    center: 'justify-center',
+    bottom: 'justify-end pb-4',
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 md:p-6 min-h-screen flex flex-col">
+      {/* Nav */}
+      <nav className="flex items-center justify-between mb-8 md:mb-12 py-4 border-b border-neutral-100">
+        <Link to="/" className="flex items-center gap-2 cursor-pointer group">
+          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+            <Sparkles size={18} />
+          </div>
+          <span className="font-bold text-lg tracking-tight font-serif">CarouselAI</span>
+        </Link>
+        <div className="flex items-center gap-3 md:gap-6 text-sm font-semibold text-neutral-600">
+          <Link to="/" className="hidden sm:block hover:text-emerald-600 transition-colors">
+            Trang chủ
+          </Link>
+          <a
+            href="https://www.facebook.com/iamNCD"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 md:px-4 md:py-2 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all text-xs md:text-sm"
+          >
+            Liên hệ
+          </a>
+          <button
+            onClick={() => setIsFeedbackOpen(true)}
+            className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-all font-bold group text-xs md:text-sm"
+          >
+            <MessageSquare size={16} className="group-hover:scale-110 transition-transform" />
+            <span>Góp ý</span>
+          </button>
+        </div>
+      </nav>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+
+      {/* Header */}
+      <header className="mb-12 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-full text-sm font-semibold mb-4"
+        >
+          <PenLine size={16} />
+          Tự Nhập Nội Dung
+        </motion.div>
+        <h1 className="text-5xl font-bold tracking-tight mb-4 font-serif">Carousel Content</h1>
+        <p className="text-neutral-500 max-w-lg mx-auto">
+          Tải ảnh và nhập nội dung của bạn cho từng slide carousel.
+        </p>
+      </header>
+
+      {/* Floating Feedback */}
+      <button
+        onClick={() => setIsFeedbackOpen(true)}
+        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 flex items-center gap-2 px-4 py-3 md:px-6 md:py-4 bg-emerald-600 text-white rounded-full shadow-2xl shadow-emerald-200 hover:bg-emerald-700 hover:scale-105 transition-all font-bold group text-sm md:text-base"
+      >
+        <MessageSquare size={18} className="group-hover:rotate-12 transition-transform" />
+        <span className="hidden sm:inline">Góp ý & Yêu cầu</span>
+        <span className="sm:hidden">Góp ý</span>
+      </button>
+
+      {/* Step indicator */}
+      <div className="flex justify-between mb-12 relative">
+        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-neutral-200 -translate-y-1/2 z-0" />
+        {[1, 2].map(s => (
+          <div
+            key={s}
+            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
+              step >= s ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-white text-neutral-400 border-2 border-neutral-200'
+            }`}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+
+      {/* Steps */}
+      <main className="flex-grow">
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              <div className="bg-white p-8 rounded-3xl shadow-xl shadow-neutral-200/50 border border-neutral-100">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <ImageIcon className="text-emerald-600" />
+                    Bước 1: Ảnh & Nội dung
+                  </h2>
+                  <Link to="/" className="text-neutral-500 hover:text-neutral-800 flex items-center gap-1 text-sm font-medium">
+                    <ChevronLeft size={16} /> Trang chủ
+                  </Link>
+                </div>
+
+                {/* Image + text grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+                  {items.map((item, index) => (
+                    <div key={index} className="space-y-3">
+                      {/* Image upload */}
+                      <div className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all ${
+                        item.image ? 'border-emerald-500 bg-emerald-50' : 'border-neutral-200 bg-neutral-50 hover:border-emerald-300'
+                      }`}>
+                        {item.image ? (
+                          <>
+                            <img src={item.image} alt="Preview" className="w-full h-full object-cover" />
+                            {logo && (
+                              <div className={`absolute p-2 pointer-events-none ${logoPositionClass[logoPosition]}`}>
+                                <img src={logo} alt="Logo" style={{ width: `${logoSize / 10}px` }} className="object-contain" />
+                              </div>
+                            )}
+                            {item.quote && (
+                              <div className={`absolute inset-0 bg-black/30 p-4 flex flex-col text-center pointer-events-none ${quoteAlignClass[quotePosition]}`}>
+                                <HighlightedQuote
+                                  quote={item.quote}
+                                  keywords={item.keywords}
+                                  selectedIndices={item.selectedIndices}
+                                  textColor={textColor}
+                                  highlightColor={highlightColor}
+                                  fontFamily={fontFamily}
+                                  fontSize={fontSize / 6.4}
+                                />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button
+                                onClick={() => setItems(prev => prev.map((it, i) => i === index ? { ...it, image: null } : it))}
+                                className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <label className="cursor-pointer flex flex-col items-center gap-2 p-4 text-center w-full h-full justify-center">
+                            <Upload size={20} className="text-neutral-400" />
+                            <span className="text-[10px] font-medium text-neutral-500">Tải ảnh {index + 1}</span>
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, index)} />
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Text input */}
+                      <textarea
+                        rows={3}
+                        placeholder={`Nội dung slide ${index + 1}...`}
+                        value={item.quote}
+                        onChange={(e) => handleQuoteChange(index, e.target.value)}
+                        className="w-full p-2 text-xs border border-neutral-200 rounded-xl bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none placeholder-neutral-400"
+                      />
+                      <WordSelector
+                        text={item.quote}
+                        selectedIndices={item.selectedIndices ?? []}
+                        highlightColor={highlightColor}
+                        onChange={(indices) => handleIndicesChange(index, indices)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Settings panel */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Màu chữ</label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border-none" />
+                      <span className="text-sm font-mono">{textColor}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Màu nổi bật</label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={highlightColor} onChange={(e) => setHighlightColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border-none" />
+                      <span className="text-sm font-mono">{highlightColor}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Font chữ</label>
+                    <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                      {FONTS.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Vị trí trích dẫn</label>
+                    <select value={quotePosition} onChange={(e) => setQuotePosition(e.target.value as QuotePosition)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="top">Góc trên</option>
+                      <option value="center">Ở giữa</option>
+                      <option value="bottom">Góc dưới</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Vị trí Logo</label>
+                    <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as LogoPosition)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="top-left">Trên - Trái</option>
+                      <option value="top-right">Trên - Phải</option>
+                      <option value="bottom-left">Dưới - Trái</option>
+                      <option value="bottom-right">Dưới - Phải</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Kích thước Logo: {logoSize}px</label>
+                    <input type="range" min="40" max="300" value={logoSize} onChange={(e) => setLogoSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase">Kích thước chữ: {fontSize}px</label>
+                    <input type="range" min="30" max="120" value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
+                  </div>
+                </div>
+
+                {/* Logo upload */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="flex-1 flex flex-col gap-2">
+                    <label className="text-sm font-bold text-neutral-600">Logo thương hiệu (Tùy chọn)</label>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => logoInputRef.current?.click()}
+                        className={`flex-1 py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all ${
+                          logo ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-neutral-200 hover:border-emerald-300 text-neutral-500'
+                        }`}
+                      >
+                        {logo ? <ImageIcon size={18} /> : <Plus size={18} />}
+                        {logo ? 'Đã tải logo' : 'Tải Logo'}
+                        <input ref={logoInputRef} type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                      </button>
+                      {logo && (
+                        <button onClick={() => setLogo(null)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bulk upload */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-4 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <Upload size={20} />
+                  Tải lên 5 ảnh cùng lúc
+                  <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e)} />
+                </button>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  disabled={!canProceed}
+                  onClick={() => setStep(2)}
+                  className="px-8 py-4 bg-neutral-900 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-neutral-800 disabled:opacity-40 transition-all"
+                  title={!canProceed ? 'Vui lòng tải ảnh và nhập nội dung cho tất cả các slide' : ''}
+                >
+                  Tiếp tục <ChevronRight size={20} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <Step3Download
+              items={items}
+              logo={logo}
+              settings={settings}
+              onDownloadOne={downloadImage}
+              onDownloadAll={downloadAll}
+              onBack={() => setStep(1)}
+            />
+          )}
+        </AnimatePresence>
+      </main>
+
+      <footer className="mt-12 py-8 border-t border-neutral-100 text-center text-neutral-400 text-sm">
+        &copy; 2026 Carousel Content Website Creator • Created by NCD
+      </footer>
+    </div>
+  );
+}

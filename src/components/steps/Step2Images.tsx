@@ -17,6 +17,7 @@ import type { LogoPosition, QuotePosition } from '../../utils/canvas';
 export interface CarouselItem {
   quote: string;
   keywords: string[];
+  selectedIndices?: number[];
   image: string | null;
   isGenerating?: boolean;
 }

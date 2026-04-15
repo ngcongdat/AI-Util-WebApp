@@ -6,6 +6,7 @@ export type QuotePosition = 'top' | 'center' | 'bottom';
 export interface DownloadOptions {
   quote: string;
   keywords: string[];
+  selectedIndices?: number[];
   image: string;
   logo: string | null;
   textColor: string;
@@ -21,7 +22,7 @@ export interface DownloadOptions {
 export function downloadCarouselImage(opts: DownloadOptions): Promise<void> {
   return new Promise((resolve, reject) => {
   const {
-    quote, keywords, image, logo,
+    quote, keywords, selectedIndices, image, logo,
     textColor, highlightColor, fontFamily, fontSize,
     logoPosition, logoSize, quotePosition, filename,
   } = opts;
@@ -46,7 +47,7 @@ export function downloadCarouselImage(opts: DownloadOptions): Promise<void> {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const finish = () => {
-      drawText(ctx, quote, keywords, textColor, highlightColor, fontFamily, fontSize, quotePosition, canvas.width, canvas.height);
+      drawText(ctx, quote, keywords, selectedIndices, textColor, highlightColor, fontFamily, fontSize, quotePosition, canvas.width, canvas.height);
       triggerDownload(canvas, filename);
       resolve();
     };
@@ -93,6 +94,7 @@ function drawText(
   ctx: CanvasRenderingContext2D,
   quote: string,
   keywords: string[],
+  selectedIndices: number[] | undefined,
   textColor: string,
   highlightColor: string,
   fontFamily: string,
@@ -109,17 +111,20 @@ function drawText(
   const maxWidth = 850;
   const words = quote.split(' ');
   const lines: string[][] = [];
+  const lineStartIndices: number[] = [];
   let currentLine: string[] = [];
 
   words.forEach(word => {
     const testLine = [...currentLine, word].join(' ');
     if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
+      lineStartIndices.push(lines.reduce((acc, l) => acc + l.length, 0));
       lines.push(currentLine);
       currentLine = [word];
     } else {
       currentLine.push(word);
     }
   });
+  lineStartIndices.push(lines.reduce((acc, l) => acc + l.length, 0));
   lines.push(currentLine);
 
   const totalHeight = lines.length * lineHeight;
@@ -127,16 +132,22 @@ function drawText(
   if (quotePosition === 'top') startY = 200 + lineHeight / 2;
   else if (quotePosition === 'bottom') startY = canvasH - 200 - totalHeight + lineHeight / 2;
 
-  lines.forEach(lineWords => {
+  lines.forEach((lineWords, lineIdx) => {
     const lineText = lineWords.join(' ');
     const lineWidth = ctx.measureText(lineText).width;
     let startX = (canvasW - lineWidth) / 2;
+    const lineStartIdx = lineStartIndices[lineIdx];
 
-    lineWords.forEach(word => {
+    lineWords.forEach((word, wordIdx) => {
+      const absoluteIdx = lineStartIdx + wordIdx;
+      const highlighted = selectedIndices !== undefined
+        ? selectedIndices.includes(absoluteIdx)
+        : isKeyword(word, keywords);
+
       ctx.font = `bold ${fontSize}px "${fontFamily}"`;
       const wordWidth = ctx.measureText(word + ' ').width;
 
-      if (isKeyword(word, keywords)) {
+      if (highlighted) {
         ctx.fillStyle = highlightColor;
         ctx.fillRect(startX - 5, startY - lineHeight / 2 + 10, wordWidth, lineHeight - 20);
         ctx.fillStyle = textColor;
