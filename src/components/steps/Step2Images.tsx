@@ -129,13 +129,13 @@ export default function Step2Images({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-8"
     >
-      <div className="bg-white p-8 rounded-3xl shadow-xl shadow-neutral-200/50 border border-neutral-100">
+      <div className="bg-white dark:bg-neutral-800 p-8 rounded-3xl shadow-xl shadow-neutral-200/50 dark:shadow-neutral-900/50 border border-neutral-100 dark:border-neutral-700">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-2xl font-bold flex items-center gap-2 dark:text-white">
             <ImageIcon className="text-emerald-600" />
             Bước 2: Hình ảnh minh họa
           </h2>
-          <button onClick={onBack} className="text-neutral-500 hover:text-neutral-800 flex items-center gap-1 text-sm font-medium">
+          <button onClick={onBack} className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-100 flex items-center gap-1 text-sm font-medium">
             <ChevronLeft size={16} /> Quay lại
           </button>
         </div>
@@ -145,7 +145,7 @@ export default function Step2Images({
           {items.map((item, index) => (
             <div key={index} className="space-y-2">
               <div className={`${ASPECT_PREVIEW_CLASS[aspectRatio]} rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all ${
-                item.image ? 'border-emerald-500 bg-emerald-50' : 'border-neutral-200 bg-neutral-50 hover:border-emerald-300'
+                item.image ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 hover:border-emerald-300 dark:hover:border-emerald-400'
               }`}>
                 {item.isGenerating ? (
                   <div className="flex flex-col items-center gap-2">
@@ -187,21 +187,21 @@ export default function Step2Images({
                   </>
                 ) : (
                   <label className="cursor-pointer flex flex-col items-center gap-2 p-4 text-center">
-                    <Upload size={20} className="text-neutral-400" />
-                    <span className="text-[10px] font-medium text-neutral-500">Tải ảnh {index + 1}</span>
+                    <Upload size={20} className="text-neutral-400 dark:text-neutral-500" />
+                    <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">Tải ảnh {index + 1}</span>
                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, index)} />
                   </label>
                 )}
               </div>
-              <p className="text-[10px] text-neutral-500 line-clamp-2 italic">"{item.quote}"</p>
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 line-clamp-2 italic">"{item.quote}"</p>
             </div>
           ))}
         </div>
 
         {/* Settings panel */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-700">
           <div className="space-y-2 md:col-span-3 lg:col-span-4">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Tỷ lệ khung hình</label>
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Tỷ lệ khung hình</label>
             <div className="flex gap-2">
               {(['1:1', '4:3', '3:4', '16:9', '9:16'] as AspectRatio[]).map(ratio => (
                 <button
@@ -210,11 +210,11 @@ export default function Step2Images({
                   onClick={() => setAspectRatio(ratio)}
                   className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${
                     aspectRatio === ratio
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100'
-                      : 'bg-white text-neutral-600 border-neutral-200 hover:border-emerald-400'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100 dark:shadow-emerald-900/30'
+                      : 'bg-white dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-600 hover:border-emerald-400'
                   }`}
                 >
-                  <span className={`inline-block border-2 rounded-sm ${aspectRatio === ratio ? 'border-white' : 'border-neutral-400'}`}
+                  <span className={`inline-block border-2 rounded-sm ${aspectRatio === ratio ? 'border-white' : 'border-neutral-400 dark:border-neutral-500'}`}
                     style={{
                       width: ratio === '1:1' ? 14 : ratio === '3:4' ? 12 : ratio === '9:16' ? 10 : ratio === '4:3' ? 18 : 22,
                       height: ratio === '1:1' ? 14 : ratio === '3:4' ? 16 : ratio === '9:16' ? 18 : ratio === '4:3' ? 13 : 12,
@@ -226,21 +226,21 @@ export default function Step2Images({
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Màu chữ</label>
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Màu chữ</label>
             <div className="flex items-center gap-2">
               <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border-none" />
-              <span className="text-sm font-mono">{textColor}</span>
+              <span className="text-sm font-mono dark:text-neutral-300">{textColor}</span>
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Màu nổi bật</label>
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Màu nổi bật</label>
             <div className="flex items-center gap-2">
               <input type="color" value={highlightColor} onChange={(e) => setHighlightColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer border-none" />
-              <span className="text-sm font-mono">{highlightColor}</span>
+              <span className="text-sm font-mono dark:text-neutral-300">{highlightColor}</span>
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-2">
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase flex items-center gap-2">
               Nền trích dẫn
               <input
                 type="checkbox"
@@ -257,28 +257,28 @@ export default function Step2Images({
                 disabled={!quoteBgColor}
                 className="w-10 h-10 rounded-lg cursor-pointer border-none disabled:opacity-30"
               />
-              <span className="text-sm font-mono">{quoteBgColor ?? 'tắt'}</span>
+              <span className="text-sm font-mono dark:text-neutral-300">{quoteBgColor ?? 'tắt'}</span>
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">
               Độ mờ nền: {quoteBgOpacity}%
             </label>
             <input
               type="range" min="10" max="100" value={quoteBgOpacity}
               onChange={(e) => setQuoteBgOpacity(parseInt(e.target.value))}
               disabled={!quoteBgColor}
-              className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 disabled:opacity-30"
+              className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-emerald-600 disabled:opacity-30"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Font chữ</label>
-            <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Font chữ</label>
+            <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full p-2 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 dark:text-white rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
               {FONTS.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Căn chỉnh chữ</label>
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Căn chỉnh chữ</label>
             <div className="flex gap-1">
               {([
                 { value: 'left',    Icon: AlignLeft },
@@ -293,7 +293,7 @@ export default function Step2Images({
                   className={`flex-1 flex items-center justify-center py-2 rounded-lg border-2 transition-all ${
                     textAlign === value
                       ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-white text-neutral-500 border-neutral-200 hover:border-emerald-400'
+                      : 'bg-white dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-neutral-600 hover:border-emerald-400'
                   }`}
                 >
                   <Icon size={16} />
@@ -302,16 +302,16 @@ export default function Step2Images({
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Vị trí trích dẫn</label>
-            <select value={quotePosition} onChange={(e) => setQuotePosition(e.target.value as QuotePosition)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Vị trí trích dẫn</label>
+            <select value={quotePosition} onChange={(e) => setQuotePosition(e.target.value as QuotePosition)} className="w-full p-2 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 dark:text-white rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="top">Góc trên</option>
               <option value="center">Ở giữa</option>
               <option value="bottom">Góc dưới</option>
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Vị trí Logo</label>
-            <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as LogoPosition)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Vị trí Logo</label>
+            <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as LogoPosition)} className="w-full p-2 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 dark:text-white rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="top-left">Trên - Trái</option>
               <option value="top-right">Trên - Phải</option>
               <option value="bottom-left">Dưới - Trái</option>
@@ -319,24 +319,24 @@ export default function Step2Images({
             </select>
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Kích thước Logo: {logoSize}px</label>
-            <input type="range" min="40" max="300" value={logoSize} onChange={(e) => setLogoSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Kích thước Logo: {logoSize}px</label>
+            <input type="range" min="40" max="300" value={logoSize} onChange={(e) => setLogoSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-xs font-bold text-neutral-500 uppercase">Kích thước chữ: {fontSize}px</label>
-            <input type="range" min="30" max="120" value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
+            <label className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Kích thước chữ: {fontSize}px</label>
+            <input type="range" min="30" max="120" value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))} className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
           </div>
         </div>
 
         {/* Logo upload */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 flex flex-col gap-2">
-            <label className="text-sm font-bold text-neutral-600">Logo thương hiệu (Tùy chọn)</label>
+            <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Logo thương hiệu (Tùy chọn)</label>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => logoInputRef.current?.click()}
                 className={`flex-1 py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all ${
-                  logo ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-neutral-200 hover:border-emerald-300 text-neutral-500'
+                  logo ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'border-neutral-200 dark:border-neutral-600 hover:border-emerald-300 text-neutral-500 dark:text-neutral-400'
                 }`}
               >
                 {logo ? <ImageIcon size={18} /> : <Plus size={18} />}
@@ -344,7 +344,7 @@ export default function Step2Images({
                 <input ref={logoInputRef} type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
               </button>
               {logo && (
-                <button onClick={() => setLogo(null)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                <button onClick={() => setLogo(null)} className="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
                   <Trash2 size={20} />
                 </button>
               )}
@@ -356,7 +356,7 @@ export default function Step2Images({
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex-1 py-4 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
           >
             <Upload size={20} />
             Tải lên 5 ảnh khác nhau
@@ -365,7 +365,7 @@ export default function Step2Images({
           <button
             disabled={!items[0]?.image || isLoading}
             onClick={() => onGenerateRestWithAI(0)}
-            className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-neutral-300 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : <RefreshCw size={20} />}
             Dùng AI tạo 4 ảnh còn lại
@@ -378,7 +378,7 @@ export default function Step2Images({
               <span>Đang tạo ảnh bằng AI...</span>
               <span>{generationProgress}%</span>
             </div>
-            <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-emerald-600"
                 initial={{ width: 0 }}
@@ -393,7 +393,7 @@ export default function Step2Images({
         <button
           disabled={!items.some(i => i.image)}
           onClick={onNext}
-          className="px-8 py-4 bg-neutral-900 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-neutral-800 disabled:opacity-50 transition-all"
+          className="px-8 py-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-2xl font-bold flex items-center gap-2 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-all"
         >
           Tiếp tục <ChevronRight size={20} />
         </button>

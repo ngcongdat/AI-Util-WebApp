@@ -39,3 +39,81 @@ Có thể đọc nhiều skill cùng lúc nếu task liên quan đến nhiều l
 - Ưu tiên Tailwind utility classes, không viết CSS tách biệt
 - Component nhỏ, single responsibility
 - Không tự commit/push — người dùng tự quyết định khi nào push
+
+---
+
+## Roadmap: Phát triển Fullstack
+
+### Mục tiêu
+Phát triển website từ SPA tĩnh (Vite) sang **fullstack app** với:
+- **Tài khoản người dùng** — mỗi người có content riêng
+- **Lưu carousel** đã tạo để xem lại sau
+- **Lưu script F&B** đã generate
+- **Backend + Database** thực sự (không chỉ là frontend thuần)
+
+### Stack mục tiêu
+| Layer | Công nghệ | Ghi chú |
+|---|---|---|
+| **Frontend** | Next.js 15 App Router + React 19 | Migrate từ Vite, giữ nguyên UI components |
+| **Styling** | Tailwind CSS v4 | Giữ nguyên |
+| **Auth** | Supabase Auth | Email + Google OAuth |
+| **Database** | Supabase (PostgreSQL) | RLS bảo vệ data theo user |
+| **Storage** | Supabase Storage | Lưu ảnh carousel, logo |
+| **AI** | Google Gemini API | Chuyển sang server-side (bảo mật API key) |
+| **Deploy** | Vercel | Thay GitHub Pages |
+
+### Database Schema (Supabase)
+
+```sql
+-- Bảng carousels
+create table carousels (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  title text not null,
+  theme text,
+  items jsonb not null,     -- [{quote, keywords, image_url, selectedIndices}]
+  settings jsonb,           -- CarouselSettings {textColor, fontFamily, ...}
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Bảng fnb_scripts
+create table fnb_scripts (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  topic text not null,
+  platform text,            -- 'reels', 'tiktok', 'youtube'
+  script_content text not null,
+  created_at timestamptz default now()
+);
+
+-- Row Level Security
+alter table carousels enable row level security;
+alter table fnb_scripts enable row level security;
+create policy "own carousels" on carousels for all using (auth.uid() = user_id);
+create policy "own scripts"   on fnb_scripts for all using (auth.uid() = user_id);
+```
+
+### Kế hoạch migration (3 phase)
+
+**Phase 1 — Setup & Infrastructure**
+- [ ] Tạo Next.js project mới, migrate components từ Vite
+- [ ] Cấu hình Supabase (project, tables, RLS)
+- [ ] Deploy lên Vercel, cấu hình env vars
+
+**Phase 2 — Authentication**
+- [ ] Trang login/signup (email + Google OAuth)
+- [ ] Middleware bảo vệ route cần đăng nhập
+- [ ] User session, avatar, dropdown menu
+
+**Phase 3 — Save & Library**
+- [ ] Nút "Lưu carousel" → ghi vào Supabase
+- [ ] Trang "Thư viện của tôi" → load lại carousel cũ
+- [ ] Nút "Lưu script" cho FnbShortScriptPage
+- [ ] Trang lịch sử script F&B
+
+### Lưu ý khi migration
+- UI components (`.tsx`) giữ nguyên, chỉ thay đổi routing và data fetching
+- Gemini API key chuyển sang **server-side** (Route Handler hoặc Server Action) — không để lộ ở browser
+- HashRouter (React Router) → Next.js App Router (`app/` directory)
+- `vite.config.ts` → `next.config.ts`
