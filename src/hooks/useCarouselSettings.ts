@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LogoPosition, QuotePosition } from '../utils/canvas';
+import type { LogoPosition, QuotePosition, AspectRatio, TextAlign } from '../utils/canvas';
 
 export interface CarouselSettings {
   textColor: string;
@@ -16,6 +16,14 @@ export interface CarouselSettings {
   setQuotePosition: (v: QuotePosition) => void;
   fontSize: number;
   setFontSize: (v: number) => void;
+  quoteBgColor: string | null;
+  setQuoteBgColor: (v: string | null) => void;
+  quoteBgOpacity: number;
+  setQuoteBgOpacity: (v: number) => void;
+  aspectRatio: AspectRatio;
+  setAspectRatio: (v: AspectRatio) => void;
+  textAlign: TextAlign;
+  setTextAlign: (v: TextAlign) => void;
 }
 
 export function useCarouselSettings(): CarouselSettings {
@@ -26,6 +34,10 @@ export function useCarouselSettings(): CarouselSettings {
   const [logoSize, setLogoSize] = useState(120);
   const [quotePosition, setQuotePosition] = useState<QuotePosition>('center');
   const [fontSize, setFontSize] = useState(64);
+  const [quoteBgColor, setQuoteBgColor] = useState<string | null>(null);
+  const [quoteBgOpacity, setQuoteBgOpacity] = useState(70);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
+  const [textAlign, setTextAlign] = useState<TextAlign>('center');
 
   return {
     textColor, setTextColor,
@@ -35,5 +47,9 @@ export function useCarouselSettings(): CarouselSettings {
     logoSize, setLogoSize,
     quotePosition, setQuotePosition,
     fontSize, setFontSize,
+    quoteBgColor, setQuoteBgColor,
+    quoteBgOpacity, setQuoteBgOpacity,
+    aspectRatio, setAspectRatio,
+    textAlign, setTextAlign,
   };
 }

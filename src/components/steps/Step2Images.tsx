@@ -9,10 +9,19 @@ import {
   Trash2,
   Loader2,
   Plus,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
 } from 'lucide-react';
 import HighlightedQuote from '../HighlightedQuote';
 import type { CarouselSettings } from '../../hooks/useCarouselSettings';
-import type { LogoPosition, QuotePosition } from '../../utils/canvas';
+import type { LogoPosition, QuotePosition, AspectRatio, TextAlign } from '../../utils/canvas';
+
+const ASPECT_PREVIEW_CLASS: Record<AspectRatio, string> = {
+  '1:1':  'aspect-square',
+  '4:3':  'aspect-[4/3]',
+  '3:4':  'aspect-[3/4]',
+  '16:9': 'aspect-video',
+  '9:16': 'aspect-[9/16]',
+};
 
 export interface CarouselItem {
   quote: string;
@@ -58,6 +67,10 @@ export default function Step2Images({
     logoSize, setLogoSize,
     quotePosition, setQuotePosition,
     fontSize, setFontSize,
+    quoteBgColor, setQuoteBgColor,
+    quoteBgOpacity, setQuoteBgOpacity,
+    aspectRatio, setAspectRatio,
+    textAlign, setTextAlign,
   } = settings;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
@@ -131,7 +144,7 @@ export default function Step2Images({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-8">
           {items.map((item, index) => (
             <div key={index} className="space-y-2">
-              <div className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all ${
+              <div className={`${ASPECT_PREVIEW_CLASS[aspectRatio]} rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all ${
                 item.image ? 'border-emerald-500 bg-emerald-50' : 'border-neutral-200 bg-neutral-50 hover:border-emerald-300'
               }`}>
                 {item.isGenerating ? (
@@ -155,6 +168,9 @@ export default function Step2Images({
                         highlightColor={highlightColor}
                         fontFamily={fontFamily}
                         fontSize={fontSize / 6.4}
+                        quoteBgColor={quoteBgColor}
+                        quoteBgOpacity={quoteBgOpacity}
+                        textAlign={textAlign}
                       />
                     </div>
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -184,6 +200,31 @@ export default function Step2Images({
 
         {/* Settings panel */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+          <div className="space-y-2 md:col-span-3 lg:col-span-4">
+            <label className="text-xs font-bold text-neutral-500 uppercase">Tỷ lệ khung hình</label>
+            <div className="flex gap-2">
+              {(['1:1', '4:3', '3:4', '16:9', '9:16'] as AspectRatio[]).map(ratio => (
+                <button
+                  key={ratio}
+                  type="button"
+                  onClick={() => setAspectRatio(ratio)}
+                  className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${
+                    aspectRatio === ratio
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100'
+                      : 'bg-white text-neutral-600 border-neutral-200 hover:border-emerald-400'
+                  }`}
+                >
+                  <span className={`inline-block border-2 rounded-sm ${aspectRatio === ratio ? 'border-white' : 'border-neutral-400'}`}
+                    style={{
+                      width: ratio === '1:1' ? 14 : ratio === '3:4' ? 12 : ratio === '9:16' ? 10 : ratio === '4:3' ? 18 : 22,
+                      height: ratio === '1:1' ? 14 : ratio === '3:4' ? 16 : ratio === '9:16' ? 18 : ratio === '4:3' ? 13 : 12,
+                    }}
+                  />
+                  {ratio}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-neutral-500 uppercase">Màu chữ</label>
             <div className="flex items-center gap-2">
@@ -199,10 +240,66 @@ export default function Step2Images({
             </div>
           </div>
           <div className="space-y-2">
+            <label className="text-xs font-bold text-neutral-500 uppercase flex items-center gap-2">
+              Nền trích dẫn
+              <input
+                type="checkbox"
+                checked={!!quoteBgColor}
+                onChange={(e) => setQuoteBgColor(e.target.checked ? '#000000' : null)}
+                className="w-4 h-4 accent-emerald-600 cursor-pointer"
+              />
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={quoteBgColor ?? '#000000'}
+                onChange={(e) => setQuoteBgColor(e.target.value)}
+                disabled={!quoteBgColor}
+                className="w-10 h-10 rounded-lg cursor-pointer border-none disabled:opacity-30"
+              />
+              <span className="text-sm font-mono">{quoteBgColor ?? 'tắt'}</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-neutral-500 uppercase">
+              Độ mờ nền: {quoteBgOpacity}%
+            </label>
+            <input
+              type="range" min="10" max="100" value={quoteBgOpacity}
+              onChange={(e) => setQuoteBgOpacity(parseInt(e.target.value))}
+              disabled={!quoteBgColor}
+              className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 disabled:opacity-30"
+            />
+          </div>
+          <div className="space-y-2">
             <label className="text-xs font-bold text-neutral-500 uppercase">Font chữ</label>
             <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full p-2 bg-white border border-neutral-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
               {FONTS.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
             </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-neutral-500 uppercase">Căn chỉnh chữ</label>
+            <div className="flex gap-1">
+              {([
+                { value: 'left',    Icon: AlignLeft },
+                { value: 'center',  Icon: AlignCenter },
+                { value: 'right',   Icon: AlignRight },
+                { value: 'justify', Icon: AlignJustify },
+              ] as { value: TextAlign; Icon: React.ElementType }[]).map(({ value, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTextAlign(value)}
+                  className={`flex-1 flex items-center justify-center py-2 rounded-lg border-2 transition-all ${
+                    textAlign === value
+                      ? 'bg-emerald-600 text-white border-emerald-600'
+                      : 'bg-white text-neutral-500 border-neutral-200 hover:border-emerald-400'
+                  }`}
+                >
+                  <Icon size={16} />
+                </button>
+              ))}
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-neutral-500 uppercase">Vị trí trích dẫn</label>
@@ -294,7 +391,7 @@ export default function Step2Images({
 
       <div className="flex justify-end">
         <button
-          disabled={items.some(i => !i.image)}
+          disabled={!items.some(i => i.image)}
           onClick={onNext}
           className="px-8 py-4 bg-neutral-900 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-neutral-800 disabled:opacity-50 transition-all"
         >
